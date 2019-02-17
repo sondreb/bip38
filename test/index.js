@@ -1,27 +1,29 @@
 /* global describe, it */
 
 var assert = require('assert')
+var wif = require('wif')
 var bip38 = require('../')
 var bs58check = require('bs58check')
 var fixtures = require('./fixtures')
-var wif = require('wif')
 
 describe('bip38', function () {
   this.timeout(200000)
 
-  describe('decrypt', function () {
+  describe('decrypt (async)', function () {
     fixtures.valid.forEach(function (f) {
       it('should decrypt ' + f.description, function () {
-        var result = bip38.decrypt(f.bip38, f.passphrase, null, null, f.network)
-        var prefix = f.network ? f.network.private : 0x80
-        assert.equal(wif.encode(prefix, result.privateKey, result.compressed), f.wif)
+        bip38.decryptAsync(f.bip38, f.passphrase, (result) => {
+          var prefix = f.network ? f.network.private : 0x80
+          assert.equal(wif.encode(prefix, result.privateKey, result.compressed), f.wif)
+        }, null, f.network)
       })
     })
 
     fixtures.invalid.decrypt.forEach(function (f) {
       it('should throw ' + f.description, function () {
         assert.throws(function () {
-          bip38.decrypt(f.bip38, f.passphrase)
+          bip38.decryptAsync(f.bip38, f.passphrase, (out) => {
+          })
         }, new RegExp(f.description, 'i'))
       })
     })
@@ -29,20 +31,23 @@ describe('bip38', function () {
     fixtures.invalid.verify.forEach(function (f) {
       it('should throw because ' + f.description, function () {
         assert.throws(function () {
-          bip38.decrypt(f.base58, 'foobar')
+          bip38.decryptAsync(f.base58, 'foobar', (out) => {
+          })
         }, new RegExp(f.exception))
       })
     })
   })
 
-  describe('encrypt', function () {
+  describe('encrypt (async)', function () {
     fixtures.valid.forEach(function (f) {
       if (f.decryptOnly) return
 
       it('should encrypt ' + f.description, function () {
         var buffer = bs58check.decode(f.wif)
 
-        assert.equal(bip38.encrypt(buffer.slice(1, 33), !!buffer[33], f.passphrase, null, null, f.network), f.bip38)
+        bip38.encryptAsync(buffer.slice(1, 33), !!buffer[33], f.passphrase, (out) => {
+          assert.equal(out, f.bip38)
+        }, null, f.network)
       })
     })
   })

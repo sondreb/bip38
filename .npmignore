@@ -2,3 +2,4 @@ test/
 .min-wd
 .gitignore
 .travis.yml
+.package-lock.json
