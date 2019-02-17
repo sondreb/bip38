@@ -14,7 +14,7 @@ describe('bip38', function () {
       it('should decrypt ' + f.description, function () {
         bip38.decryptAsync(f.bip38, f.passphrase, (result) => {
           var prefix = f.network ? f.network.private : 0x80
-          assert.equal(wif.encode(prefix, result.privateKey, result.compressed), f.wif)
+          assert.strictEqual(wif.encode(prefix, result.privateKey, result.compressed), f.wif)
         }, null, f.network)
       })
     })
@@ -46,7 +46,7 @@ describe('bip38', function () {
         var buffer = bs58check.decode(f.wif)
 
         bip38.encryptAsync(buffer.slice(1, 33), !!buffer[33], f.passphrase, (out) => {
-          assert.equal(out, f.bip38)
+          assert.strictEqual(out, f.bip38)
         }, null, f.network)
       })
     })
